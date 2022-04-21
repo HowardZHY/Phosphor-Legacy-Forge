@@ -2,17 +2,17 @@ buildscript {
     repositories {
         jcenter()
 
-        maven { url = 'https://repo.spongepowered.org/maven' }
-        maven { url = 'http://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
+        maven { url = 'https://maven.minecraftforge.net' }
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:5.1.+'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
 group = "me.jellysquid.mods"
@@ -29,23 +29,46 @@ compileJava {
 }
 
 minecraft {
-    version = "${minecraft_version}-${forge_version}"
-    runDir = "run"
+    mappings channel: 'stable', version: '39-1.12'
 
-    mappings = forge_mappings
+    runs {
+        client {
 
-    def args = "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
+            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
+            jvmArg "-Dmixin.hotSwap=true"
+            jvmArg "-Dmixin.checks.interfaces=true"
 
-    clientJvmArgs += args
-    serverJvmArgs += args
+            workingDirectory project.file('run')
 
-    makeObfSourceJar = false
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+        }
+
+        server {
+
+            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
+            jvmArg "-Dmixin.hotSwap=true"
+            jvmArg "-Dmixin.checks.interfaces=true"
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
 }
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/maven' }
     maven {
         url "https://www.cursemaven.com"
+    }
+    flatDir {
+        dirs "libs"
     }
     mavenLocal()
 }
@@ -56,8 +79,23 @@ configurations {
 }
 
 dependencies {
-    deobfCompile "curse.maven:dynamiclights-227874:2563244"
-    deobfCompile ("zone.rong:mixinbooter:4.2")
+    minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2860"
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+    compileOnly("org.spongepowered:spongeapi:7.4.0")
+    compileOnly("org.spongepowered:mixin:0.8.5") {
+        exclude module: "asm-commons"
+        exclude module: "asm-tree"
+        exclude module: "launchwrapper"
+        exclude module: "guava"
+        exclude module: "log4j-core"
+        exclude module: "gson"
+        exclude module: "commons-io"
+    }
+    compileOnly fg.deobf("curse.maven:dynamiclights-227874:2563244")
+    compileOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
+    runtimeOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
+    runtimeOnly "re:witchery:0.5.2.4"
+    runtimeOnly "tt:tp:1.0.1.1"
 }
 
 def coreModManifest = {
@@ -86,30 +124,15 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task deobfJar(type: Jar, dependsOn: reobfJar) {
-    classifier = 'dev'
-
-    manifest coreModManifest
-
-    from sourceSets.main.output
-}
-
-import net.minecraftforge.gradle.user.TaskExtractAnnotations
-
-task deobfJarExtractAnnotations(type: TaskExtractAnnotations, dependsOn: deobfJar) {
-    jar = deobfJar.archivePath
-}
-
-deobfJar.finalizedBy deobfJarExtractAnnotations
-
 processResources {
+    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+    inputs.property "mcversion", "1.12.2"
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
 
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+        expand 'version': project.version, 'mcversion': "1.12.2"
     }
 
     from(sourceSets.main.resources.srcDirs) {
@@ -119,6 +142,7 @@ processResources {
 
 mixin {
     add sourceSets.main, "mixins.phosphor.refmap.json"
+    disableAnnotationProcessorCheck()
 }
 
-build.dependsOn deobfJar, sourcesJar
+build.dependsOn sourcesJar

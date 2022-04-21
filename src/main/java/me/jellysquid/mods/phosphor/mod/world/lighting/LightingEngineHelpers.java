@@ -23,15 +23,9 @@ public class LightingEngineHelpers {
 
         if (section != Chunk.NULL_BLOCK_STORAGE)
         {
-            int i = section.data.storage.getAt((y & 15) << 8 | (z & 15) << 4 | x & 15);
 
-            if (i != 0) {
-                IBlockState state = section.data.palette.getBlockState(i);
+            return section.getData().get((x & 15), (y & 15), (z & 15));
 
-                if (state != null) {
-                    return state;
-                }
-            }
         }
 
         return DEFAULT_BLOCK_STATE;

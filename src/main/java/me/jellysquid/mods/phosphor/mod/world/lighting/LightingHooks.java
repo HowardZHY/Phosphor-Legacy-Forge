@@ -320,21 +320,17 @@ public class LightingHooks {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
-                            int key = storage.data.storage.getAt(y << 8 | z << 4 | x);
 
-                            if (key != 0) {
-                                IBlockState state = storage.data.palette.getBlockState(key);
+                            IBlockState state = storage.getData().get(x, y, z);
 
-                                if (state != null) {
-                                    int light = LightingEngineHelpers.getLightValueForState(state, world, pos);
+                            int light = LightingEngineHelpers.getLightValueForState(state, world, pos);
 
-                                    if (light > 0) {
-                                        pos.setPos(xBase + x, yBase + y, zBase + z);
+                            if (light > 0) {
+                                pos.setPos(xBase + x, yBase + y, zBase + z);
 
-                                        world.checkLightFor(EnumSkyBlock.BLOCK, pos);
-                                    }
-                                }
+                                world.checkLightFor(EnumSkyBlock.BLOCK, pos);
                             }
+
                         }
                     }
                 }
