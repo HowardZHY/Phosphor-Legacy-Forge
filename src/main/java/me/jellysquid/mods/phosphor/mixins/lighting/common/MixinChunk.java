@@ -266,6 +266,9 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
     }
 
     private void checkSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int maxValue) {
+        if(slice.getChunkFromWorldCoords(x, z) == null) {
+            return;
+        }
         int i = slice.getChunkFromWorldCoords(x, z).getHeightValue(x & 15, z & 15);
 
         if (i > maxValue) {

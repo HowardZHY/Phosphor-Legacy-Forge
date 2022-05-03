@@ -92,6 +92,7 @@ dependencies {
         exclude module: "commons-io"
     }
     compileOnly fg.deobf("curse.maven:dynamiclights-227874:2563244")
+    compileOnly fg.deobf("curse.maven:sel-341845:3024600")
     compileOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
     runtimeOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
     runtimeOnly "re:witchery:0.5.2.4"
