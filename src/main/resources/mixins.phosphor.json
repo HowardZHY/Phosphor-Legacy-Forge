@@ -5,8 +5,7 @@
   "plugin": "me.jellysquid.mods.phosphor.mixins.plugins.LightingEnginePlugin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "client.MixinMinecraft",
-    "client.MixinRenderGlobal"
+    "client.MixinMinecraft"
   ],
   "mixins": [
     "common.MixinAnvilChunkLoader",
