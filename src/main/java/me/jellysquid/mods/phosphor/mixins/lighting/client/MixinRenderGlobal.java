@@ -13,6 +13,6 @@ public class MixinRenderGlobal {
 
     @Inject(at = @At("HEAD"), method = "notifyLightSet")
     public void notifyLightSet(BlockPos pos, CallbackInfo ci) {
-        PhosphorMod.LOGGER.debug(pos);
+        //PhosphorMod.LOGGER.debug(pos);
     }
 }
