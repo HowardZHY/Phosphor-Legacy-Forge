@@ -124,6 +124,8 @@ def coreModManifest = {
     attributes "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
     attributes "FMLCorePluginContainsFMLMod": true
     attributes "ForceLoadAsMod": true
+    attributes "tweakClass": "org.spongepowered.asm.launch.MixinTweaker"
+    attributes "TweakOrder": 0
 }
 
 jar {

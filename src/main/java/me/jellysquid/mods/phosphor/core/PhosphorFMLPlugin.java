@@ -5,13 +5,13 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
-import zone.rong.mixinbooter.IEarlyMixinLoader;
+//import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import java.util.List;
 import java.util.Map;
 
 //@IFMLLoadingPlugin.MCVersion("1.8.9")
-public class PhosphorFMLPlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
+public class PhosphorFMLPlugin implements IFMLLoadingPlugin {
 
     public PhosphorFMLPlugin() {
         MixinBootstrap.init();
@@ -42,8 +42,9 @@ public class PhosphorFMLPlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
     public String getAccessTransformerClass() {
         return null;
     }
-    @Override
+
+    /*@Override
     public List<String> getMixinConfigs() {
         return ImmutableList.of("mixins.phosphor.json");
-    }
+    }*/
 }
