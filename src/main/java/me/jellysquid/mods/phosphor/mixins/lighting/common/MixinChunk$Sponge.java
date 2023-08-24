@@ -5,10 +5,7 @@ import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import org.spongepowered.asm.mixin.Dynamic;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Slice;
 
 @Mixin(value = Chunk.class, priority = 10055)
 public abstract class MixinChunk$Sponge {
+    @Unique
     private static final String SET_BLOCK_STATE_SPONGE = "bridge$setBlockState" +
             "(Lnet/minecraft/util/math/BlockPos;" +
             "Lnet/minecraft/block/state/IBlockState;" +
@@ -25,7 +23,7 @@ public abstract class MixinChunk$Sponge {
 
     @Shadow
     @Final
-    private World world;
+    private World worldObj;
 
     /**
      * Redirects the construction of the ExtendedBlockStorage in setBlockState(BlockPos, IBlockState). We need to initialize
@@ -35,6 +33,7 @@ public abstract class MixinChunk$Sponge {
      */
     @Dynamic
     @Redirect(
+            require = 0,
             method = SET_BLOCK_STATE_SPONGE,
             at = @At(
                     value = "NEW",
@@ -46,10 +45,11 @@ public abstract class MixinChunk$Sponge {
         return this.initSection(y, storeSkylight);
     }
 
+    @Unique
     private ExtendedBlockStorage initSection(int y, boolean storeSkylight) {
         ExtendedBlockStorage storage = new ExtendedBlockStorage(y, storeSkylight);
 
-        LightingHooks.initSkylightForSection(this.world, (Chunk) (Object) this, storage);
+        LightingHooks.initSkylightForSection(this.worldObj, (Chunk) (Object) this, storage);
 
         return storage;
     }
@@ -62,6 +62,7 @@ public abstract class MixinChunk$Sponge {
      */
     @Dynamic
     @ModifyVariable(
+            require = 0,
             method = SET_BLOCK_STATE_SPONGE,
             at = @At(
                     value = "LOAD",
@@ -93,6 +94,7 @@ public abstract class MixinChunk$Sponge {
      */
     @Dynamic
     @ModifyVariable(
+            require = 0,
             method = SET_BLOCK_STATE_SPONGE,
             at = @At(
                     value = "LOAD",
@@ -126,6 +128,7 @@ public abstract class MixinChunk$Sponge {
      */
     @Dynamic
     @ModifyVariable(
+            require = 0,
             method = SET_BLOCK_STATE_SPONGE,
             at = @At(
                     value = "LOAD",
@@ -151,6 +154,7 @@ public abstract class MixinChunk$Sponge {
         return WIZARD_MAGIC;
     }
 
+    @Unique
     private static final int WIZARD_MAGIC = 694698818;
 
 }

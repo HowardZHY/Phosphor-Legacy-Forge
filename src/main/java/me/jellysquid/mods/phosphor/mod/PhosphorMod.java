@@ -7,8 +7,8 @@ import org.apache.logging.log4j.Logger;
 @Mod(
         name = PhosphorConstants.MOD_NAME,
         modid = PhosphorConstants.MOD_ID,
-        version = PhosphorConstants.MOD_VERSION,
-        acceptedMinecraftVersions = "1.12.2",
+        version = "0.2.9.2",
+        acceptedMinecraftVersions = "[1.8,)",
         acceptableRemoteVersions = "*",
         dependencies = PhosphorConstants.MOD_DEPENDENCIES
 )

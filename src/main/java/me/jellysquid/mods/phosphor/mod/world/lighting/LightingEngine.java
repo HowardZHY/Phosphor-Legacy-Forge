@@ -6,14 +6,15 @@ import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.mixins.plugins.LightingEnginePlugin;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.collections.PooledLongQueue;
+import me.jellysquid.mods.phosphor.mod.world.ChunkHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.BlockPos.MutableBlockPos;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3i;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -105,7 +106,7 @@ public class LightingEngine implements ILightingEngine {
 
     public LightingEngine(final World world) {
         this.world = world;
-        this.profiler = world.profiler;
+        this.profiler = world.theProfiler;
         isDynamicLightsLoaded = Loader.isModLoaded("dynamiclights");
 
         PooledLongQueue.Pool pool = new PooledLongQueue.Pool();
@@ -431,21 +432,21 @@ public class LightingEngine implements ILightingEngine {
         int j = pos.getY();
         int k = pos.getZ() & 15;
 
-        if (storage == Chunk.NULL_BLOCK_STORAGE) {
+        if (storage == null) {
             if (type == EnumSkyBlock.SKY && chunk.canSeeSky(pos)) {
                 return type.defaultLightValue;
             } else {
                 return 0;
             }
         } else if (type == EnumSkyBlock.SKY) {
-            if (!chunk.getWorld().provider.hasSkyLight()) {
+            if (chunk.getWorld().provider.getHasNoSky()) {
                 return 0;
             } else {
-                return storage.getSkyLight(i, j & 15, k);
+                return storage.getExtSkylightValue(i, j & 15, k);
             }
         } else {
             if (type == EnumSkyBlock.BLOCK) {
-                return storage.getBlockLight(i, j & 15, k);
+                return storage.getExtBlocklightValue(i, j & 15, k);
             } else {
                 return type.defaultLightValue;
             }
@@ -535,7 +536,7 @@ public class LightingEngine implements ILightingEngine {
         final int posY = (int) (longPos >> sY & mY);
         final int posZ = (int) (longPos >> sZ & mZ) - (1 << lZ - 1);
 
-        return pos.setPos(posX, posY, posZ);
+        return pos.set(posX, posY, posZ);
     }
 
     private static long encodeWorldCoord(final BlockPos pos) {
@@ -594,16 +595,16 @@ public class LightingEngine implements ILightingEngine {
                 return 0;
             }
         }
-
-        return MathHelper.clamp(LightingEngineHelpers.getLightValueForState(state, this.world, this.curPos), 0, MAX_LIGHT);
+        // LightingEngineHelpers.getLightValueForState(state, this.world, this.curPos)
+        return MathHelper.clamp_int(state.getBlock().getLightValue(), 0, MAX_LIGHT);
     }
 
     private int getPosOpacity(final BlockPos pos, final IBlockState state) {
-        return MathHelper.clamp(state.getLightOpacity(this.world, pos), 1, MAX_LIGHT);
+        return MathHelper.clamp_int(state.getBlock().getLightOpacity(this.world, pos), 1, MAX_LIGHT);
     }
 
     private Chunk getChunk(final BlockPos pos) {
-        return this.world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        return ChunkHelper.getLoadedChunk(this.world.getChunkProvider(),pos.getX() >> 4, pos.getZ() >> 4);
     }
 
     private static class NeighborInfo {

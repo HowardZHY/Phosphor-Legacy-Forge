@@ -2,7 +2,7 @@ package me.jellysquid.mods.phosphor.mixins.lighting.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingEngine;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
