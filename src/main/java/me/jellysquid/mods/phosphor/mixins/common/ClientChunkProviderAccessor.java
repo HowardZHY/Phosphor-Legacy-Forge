@@ -10,5 +10,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ChunkProviderClient.class)
 public interface ClientChunkProviderAccessor {
     @Accessor("chunkMapping")
-    public LongHashMap<Chunk> getChunkStorage();
+    LongHashMap<Chunk> getChunkStorage();
 }

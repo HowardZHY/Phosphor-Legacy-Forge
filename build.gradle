@@ -4,6 +4,7 @@ buildscript {
 
         maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.cleanroommc.com' }
     }
 
     dependencies {
@@ -71,6 +72,9 @@ repositories {
         url "https://www.cursemaven.com"
     }
     maven { url = 'https://maven.minecraftforge.net' }
+    maven {
+        url 'https://maven.cleanroommc.com'
+    }
     flatDir {
         dirs "libs"
     }
@@ -86,11 +90,11 @@ configurations {
 }
 
 dependencies {
-    include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
-    /*minecraft "net.minecraftforge:forge:1.8.9-14.23.5.2860"
-    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    compileOnly("org.spongepowered:spongeapi:7.4.0")
-    compileOnly("org.spongepowered:mixin:0.8.5") {
+    compile 'zone.rong:mixinbooter:8.4'
+    //include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    //annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+    //compileOnly("org.spongepowered:spongeapi:7.4.0")
+    /*("org.spongepowered:mixin:0.8.5") {
         exclude module: "asm-commons"
         exclude module: "asm-tree"
         exclude module: "launchwrapper"
