@@ -117,7 +117,6 @@ idea {
 
 def coreModManifest = {
     attributes "FMLAT": "phosphor_at.cfg"
-    attributes "Maven-Artifact": "${group}:${name}:${version}"
     attributes "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
     attributes "FMLCorePluginContainsFMLMod": true
     attributes "ForceLoadAsMod": true
