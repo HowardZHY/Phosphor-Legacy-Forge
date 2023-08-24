@@ -1,26 +1,13 @@
-<a href="https://www.patreon.com/bePatron?u=824442"><img src="https://github.com/jellysquid3/phosphor-forge/raw/1.12.x/stable/doc/patreon.png" width="200"></a>
+# This is a 1.8.9 Forge Phosphor port based on https://github.com/Grayray75/Phosphor-Legacy and https://github.com/kappa-maintainer/Hesperus.
 
-If Phosphor has made an improvement in performance for you, [please consider pledging to my Patreon!](https://patreon.com/jellysquid) Every pledge goes directly towards funding development and allows me
-to continue making Minecraft mods.
+Mod compat:
 
------
-
-![Project icon](https://github.com/jellysquid3/phosphor-forge/raw/1.12.x/stable/doc/logo.png)
+Tested with Optifine, Essential/Patcher and many other coremods. Not compatible with SpongeForge.
 
 # Phosphor
-![GitHub license](https://img.shields.io/github/license/jellysquid3/phosphor-forge.svg)
-![GitHub issues](https://img.shields.io/github/issues/jellysquid3/phosphor-forge.svg)
-![GitHub tag](https://img.shields.io/github/tag/jellysquid3/phosphor-forge.svg)
-[![CurseForge downloads](http://cf.way2muchnoise.eu/full_318255_downloads.svg)](https://minecraft.curseforge.com/projects/phosphor)
 
 Phosphor is a free and open-source Minecraft mod (under GNU GPLv3) aiming to save your CPU cycles and improve performance by optimizing one of Minecraft's most inefficient areas-- the lighting engine.
 It works on **both the client and server**, and can be installed on servers **without requiring clients to also have the mod**.
-
-<p align="center">
-  <img src="https://github.com/jellysquid3/phosphor-forge/raw/1.12.x/stable/doc/benchmarks.png" />
-</p>
-
-_For more information about how these results were obtained, [please see my writeup on the benchmarking methodology](https://gist.github.com/jellysquid3/3b545be9c00cc59fe5c68927d03ec708)._
 
 Phosphor is designed to be as minimal as possible in the changes it makes, and as such, does not modify the light model or interfaces of vanilla Minecraft. Because of this, Phosphor should be compatible
 with many Minecraft mods (so long as they do not make drastic changes to how the lighting engine works.) If you've ran into a compatibility problem, please open an issue!
