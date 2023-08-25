@@ -2,7 +2,9 @@
 
 Mod compat:
 
-Tested with Optifine, Essential/Patcher and many other coremods. Not compatible with SpongeForge.
+Tested with Optifine, Essential/Patcher and many other coremods. 
+
+Not compatible with SpongeForge, Due to SpongeForge 1.8.9 was using outdated Mixin 0.5.11 and there're some other weird invalid mixin exceptions.
 
 # Phosphor
 
