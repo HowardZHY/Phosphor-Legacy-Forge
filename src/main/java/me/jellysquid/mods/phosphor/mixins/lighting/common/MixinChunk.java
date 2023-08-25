@@ -148,7 +148,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
         if (j != i) {
             this.heightMap[z << 4 | x] = j;
 
-            if (this.worldObj.provider.hasNoSky) {
+            if (this.worldObj.provider.getHasNoSky()) {
                 LightingHooks.relightSkylightColumn(this.worldObj, (Chunk) (Object) this, x, z, i, j);
             }
 
