@@ -1,5 +1,6 @@
 {
   "required": true,
+  "minVersion": "0.7",
   "package": "me.jellysquid.mods.phosphor.mixins",
   "plugin": "me.jellysquid.mods.phosphor.mixins.plugins.LightingEnginePlugin",
   "compatibilityLevel": "JAVA_8",
@@ -10,7 +11,6 @@
   "mixins": [
     "lighting.common.MixinAnvilChunkLoader",
     "lighting.common.MixinChunk",
-    "lighting.common.MixinChunk$Sponge",
     "lighting.common.MixinChunk$Vanilla",
     "lighting.common.MixinChunkProviderServer",
     "lighting.common.MixinExtendedBlockStorage",

@@ -45,9 +45,9 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
         }
 
         if (this.spongePresent) {
-            logger.info("Sponge has been detected on the classpath! Enabling Sponge specific patches...");
-            logger.warn("We cannot currently detect if you are using Sponge's async lighting patch. If you have not " +
-                    "already done so, please disable it in your configuration file for SpongeForge or you will run into issues.");
+            logger.error("Sponge (Forge) has been detected on the classpath, you will run into issues. ");
+            logger.error("Due to SpongeForge 1.8.9 's codebase was outdated and uses an extremely outdated Mixin (0.5.11), This mod can't be compatible with it! ");
+            System.exit(-1);
         }
     }
 
@@ -70,7 +70,7 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
             // Disable all Vanilla patches if we are in a Sponge environment
             if (mixinClassName.endsWith("$Vanilla")) {
                 logger.debug("Disabled mixin '{}' because we are in a SpongeForge environment", mixinClassName);
-
+                // Won't go here
                 return false;
             }
         } else {

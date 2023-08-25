@@ -91,7 +91,7 @@ configurations {
 
 dependencies {
     compile 'zone.rong:mixinbooter:8.4'
-    //include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    compile fileTree(dir: 'libs', include:'DynamicLights-1.8.8.jar')
     //annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     //compileOnly("org.spongepowered:spongeapi:7.4.0")
     /*("org.spongepowered:mixin:0.8.5") {
@@ -109,13 +109,16 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
     runtimeOnly "re:witchery:0.5.2.4"
     runtimeOnly "tt:tp:1.0.1.1"*/
-    compile fileTree(dir: 'libs', include:'DynamicLights-1.8.8.jar')
+    include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 }
+
+apply plugin: "idea"
 
 idea {
     module {
         downloadJavadoc = false
         downloadSources = false
+        inheritOutputDirs = true
     }
 }
 
@@ -136,6 +139,15 @@ jar {
     from sourceSets.main.output
 
     rename '(.+_at.cfg)', 'META-INF/$1'
+
+    enabled = false
+}
+
+mixin {
+    disableRefMapWarning = true
+    defaultObfuscationEnv searge
+    add sourceSets.main, "mixins.phosphor.refmap.json"
+    //disableAnnotationProcessorCheck()
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -161,11 +173,24 @@ processResources {
     }*/
 }
 
-mixin {
-    disableRefMapWarning = true
-    defaultObfuscationEnv searge
-    add sourceSets.main, "mixins.phosphor.refmap.json"
-    //disableAnnotationProcessorCheck()
+
+
+shadowJar {
+    archiveName = jar.archiveName
+    configurations = [project.configurations.include]
+    compileJava.options.encoding = "UTF-8"
+    exclude "native-binaries/*"
+    exclude "META-INF/versions/**"
+
+    dependencies {
+        include(dependency("org.spongepowered:mixin:0.7.11-SNAPSHOT"))
+    }
 }
 
-build.dependsOn sourcesJar
+reobf {
+    shadowJar {}
+}
+
+jar.dependsOn("shadowJar")
+
+build.dependsOn shadowJar
