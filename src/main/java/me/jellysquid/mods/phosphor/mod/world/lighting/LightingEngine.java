@@ -366,9 +366,9 @@ public class LightingEngine implements ILightingEngine {
                 if (oldLight == curLight) //only process this if nothing else has happened at this position since scheduling
                 {
 
-                    if (lightType == EnumSkyBlock.BLOCK) {
-                        this.world.notifyLightSet(this.curPos);
-                    }
+
+                    this.world.notifyLightSet(this.curPos);
+
 
                     if (curLight > 1) {
                         this.spreadLightFromCursor(curLight, lightType);
