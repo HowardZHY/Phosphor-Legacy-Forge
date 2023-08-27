@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:5.1.+'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:6.0.+'
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
@@ -67,6 +67,9 @@ repositories {
     maven {
         url "https://www.cursemaven.com"
     }
+    maven {
+        url 'https://maven.cleanroommc.com'
+    }
     flatDir {
         dirs "libs"
     }
@@ -93,10 +96,10 @@ dependencies {
     }
     compileOnly fg.deobf("curse.maven:dynamiclights-227874:2563244")
     compileOnly fg.deobf("curse.maven:sel-341845:3024600")
-    compileOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
-    runtimeOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
-    runtimeOnly "re:witchery:0.5.2.4"
-    runtimeOnly "tt:tp:1.0.1.1"
+    compileOnly 'zone.rong:mixinbooter:8.4'
+    runtimeOnly 'zone.rong:mixinbooter:8.4'
+    //runtimeOnly "re:witchery:0.5.2.4"
+    //runtimeOnly "tt:tp:1.0.1.1"
 }
 
 def coreModManifest = {
