@@ -111,7 +111,7 @@ def coreModManifest = {
 }
 
 jar {
-    classifier = 'universal'
+    //classifier = 'universal'
 
     manifest coreModManifest
 
@@ -120,13 +120,7 @@ jar {
     rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
 
-    manifest coreModManifest
-
-    from sourceSets.main.allSource
-}
 
 processResources {
     duplicatesStrategy(DuplicatesStrategy.INCLUDE)
@@ -149,4 +143,4 @@ mixin {
     disableAnnotationProcessorCheck()
 }
 
-build.dependsOn sourcesJar
+
