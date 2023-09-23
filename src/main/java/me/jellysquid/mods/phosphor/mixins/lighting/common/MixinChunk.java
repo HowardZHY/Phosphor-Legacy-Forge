@@ -148,7 +148,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
         if (j != i) {
             this.heightMap[z << 4 | x] = j;
 
-            if (this.worldObj.provider.getHasNoSky()) {
+            if (!this.worldObj.provider.getHasNoSky()) {
                 LightingHooks.relightSkylightColumn(this.worldObj, (Chunk) (Object) this, x, z, i, j);
             }
 
@@ -365,7 +365,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
             // 1.8.9 Note: isOverworld() doesn't exist here so i'm using !isNether()
             // It should be noted that isNether() is named wrong it should be hasNoSky (MCP) or so
             //
-            //if (!this.world.dimension.hasSkyLight()) {
+            // if (!this.world.dimension.hasSkyLight()) {
             if (this.worldObj.provider.getHasNoSky()) {
                 return 0;
             }
