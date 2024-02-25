@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import net.minecraft.network.play.server.S21PacketChunkData;
@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(S21PacketChunkData.class)
-public abstract class MixinS21PacketChunkData {
+public abstract class MixinSPacketChunkData {
     /**
      * @author Angeline
      * Injects a callback into S21PacketChunkData#calculateChunkSize(Chunk, booolean, int) to force light updates to be
@@ -17,7 +17,7 @@ public abstract class MixinS21PacketChunkData {
      * to inject elsewhere other than the RETURN of a ctor, which is too late for our needs.
      */
     @Inject(method = "getExtractedData", at = @At("HEAD"))
-    private static void onCalculateChunkSize(Chunk chunkIn, boolean hasSkyLight, boolean p_getExtractedData_2_, int changedSectionFilter, CallbackInfoReturnable<Integer> cir) {
+    private static void onCalculateChunkSize(Chunk chunkIn, boolean load, boolean hasSkyLight, int changedSectionFilter, CallbackInfoReturnable<Integer> cir) {
         ((ILightingEngineProvider) chunkIn).getLightingEngine().processLightUpdates();
     }
 }

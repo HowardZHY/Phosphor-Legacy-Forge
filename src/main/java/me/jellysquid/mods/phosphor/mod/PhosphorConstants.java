@@ -5,7 +5,5 @@ public class PhosphorConstants {
 
     public static final String MOD_NAME = "Phosphor";
 
-    public static final String MOD_VERSION = "1.12.2-0.2.9.2";
-
-    public static final String MOD_DEPENDENCIES = "after:neid@[*,);after:spongeforge@[*,)";
+    public static final String MOD_VERSION = "1.8.9-0.2.9.3";
 }

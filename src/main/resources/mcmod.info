@@ -3,7 +3,7 @@
     "modid": "phosphor-lighting",
     "name": "Phosphor Lighting Engine",
     "description": "Unofficial fork and port of Phosphor. Lighting engine performance optimizations and bug fixes for Minecraft. ",
-    "version": "0.2.9.2",
+    "version": "0.2.9.3",
     "mcversion": "1.8.9",
     "logoFile": "/assets/phosphor-lighting/icon.png",
     "url": "https://github.com/HowardZHY/Phosphor-Legacy-Forge",

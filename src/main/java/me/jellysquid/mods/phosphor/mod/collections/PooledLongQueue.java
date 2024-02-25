@@ -160,5 +160,4 @@ public class PooledLongQueue {
             this.pool.release(this);
         }
     }
-
 }

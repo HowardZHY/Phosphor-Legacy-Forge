@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.common;
+package me.jellysquid.mods.phosphor.mixins.client;
 
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.LongHashMap;

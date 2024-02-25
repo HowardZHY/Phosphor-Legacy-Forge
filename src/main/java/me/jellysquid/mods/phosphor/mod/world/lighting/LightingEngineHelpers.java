@@ -1,15 +1,21 @@
 package me.jellysquid.mods.phosphor.mod.world.lighting;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.BlockState;
+import me.jellysquid.mods.phosphor.mixins.client.ClientChunkProviderAccessor;
+import me.jellysquid.mods.phosphor.mixins.common.ServerChunkProviderAccessor;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.LongHashMap;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.gen.ChunkProviderServer;
 
 public class LightingEngineHelpers {
+
     private static final IBlockState DEFAULT_BLOCK_STATE = Blocks.air.getDefaultState();
 
     // Avoids some additional logic in Chunk#getBlockState... 0 is always air
@@ -24,16 +30,10 @@ public class LightingEngineHelpers {
 
         if (section != null)
         {
-            int key = section.getData()[(y & 15) << 8 | (z & 15) << 4 | x & 15];
-
-            if (key != 0) {
-                IBlockState state = Block.BLOCK_STATE_IDS.getByValue(key);
-
-                if (state != null) {
-                    return state;
-                }
+            IBlockState state = section.getBlockByExtId((x & 15), (y & 15), (z & 15)).getDefaultState();
+            if (state != null) {
+                return state;
             }
-
         }
 
         return DEFAULT_BLOCK_STATE;
@@ -47,5 +47,19 @@ public class LightingEngineHelpers {
             /* Use the vanilla implementation */
             return state.getBlock().getLightValue(world, pos);
         }
+    }
+
+    public static Chunk getLoadedChunk(IChunkProvider chunkProvider, int x, int z) {
+        if (chunkProvider instanceof ChunkProviderServer) {
+            LongHashMap<Chunk> chunkStorage = ((ServerChunkProviderAccessor) chunkProvider).getChunkStorage();
+            return chunkStorage.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+        }
+        if (chunkProvider instanceof ChunkProviderClient) {
+            LongHashMap<Chunk> chunkStorage = ((ClientChunkProviderAccessor) chunkProvider).getChunkStorage();
+            return chunkStorage.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+        }
+
+        // Fallback for other providers, hopefully this doesn't break...
+        return chunkProvider.provideChunk(x, z);
     }
 }

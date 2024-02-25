@@ -3,19 +3,21 @@
   "minVersion": "0.7",
   "package": "me.jellysquid.mods.phosphor.mixins",
   "plugin": "me.jellysquid.mods.phosphor.mixins.plugins.LightingEnginePlugin",
+  "refmap": "mixins.phosphor.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "lighting.client.MixinMinecraft",
-    "common.ClientChunkProviderAccessor"
+    "client.ClientChunkProviderAccessor",
+    "client.MixinMinecraft"
   ],
   "mixins": [
-    "lighting.common.MixinAnvilChunkLoader",
-    "lighting.common.MixinChunk",
-    "lighting.common.MixinChunk$Vanilla",
-    "lighting.common.MixinChunkProviderServer",
-    "lighting.common.MixinExtendedBlockStorage",
-    "lighting.common.MixinS21PacketChunkData",
-    "lighting.common.MixinWorld",
+    "common.MixinAnvilChunkLoader",
+    "common.MixinChunk",
+    "common.MixinChunk$Legacy",
+    "common.MixinChunk$Vanilla",
+    "common.MixinChunkProviderServer",
+    "common.MixinExtendedBlockStorage",
+    "common.MixinSPacketChunkData",
+    "common.MixinWorld",
     "common.ServerChunkProviderAccessor"
   ],
   "injectors": {

@@ -1,9 +1,10 @@
 buildscript {
     repositories {
+        mavenCentral()
         jcenter()
 
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.cleanroommc.com' }
     }
 
@@ -33,55 +34,39 @@ minecraft {
     mappings = "stable_22"
     runDir = "run"
     makeObfSourceJar = false
-        /*runs {
-        client {
+}
 
-            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-            jvmArg "-Dmixin.hotSwap=true"
-            jvmArg "-Dmixin.checks.interfaces=true"
+runClient {
+    jvmArgs "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
+    jvmArgs "-Dmixin.hotSwap=true"
+    jvmArgs "-Dmixin.checks.interfaces=true"
+/*
+// Recommended logging data for a userdev environment
+    property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-
-        server {
-
-            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-            jvmArg "-Dmixin.hotSwap=true"
-            jvmArg "-Dmixin.checks.interfaces=true"
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-    }*/
+// Recommended logging level for the console
+    property 'forge.logging.console.level', 'debug'*/
 }
 
 repositories {
     mavenCentral()
+    maven { url 'https://maven.minecraftforge.net' }
     maven { url 'https://jitpack.io/' }
     maven { url 'https://repo.spongepowered.org/maven' }
     maven {
         url "https://www.cursemaven.com"
     }
-    maven { url = 'https://maven.minecraftforge.net' }
     maven {
         url 'https://maven.cleanroommc.com'
     }
-    flatDir {
+    /*flatDir {
         dirs "libs"
-    }
+    }*/
     mavenLocal()
 }
 
 configurations {
+    dynamicLights
     include
     implementation.extendsFrom(include)
     configurations.runtimeOnly.canBeResolved = true
@@ -90,26 +75,25 @@ configurations {
 }
 
 dependencies {
-    compile 'zone.rong:mixinbooter:8.4'
-    compile fileTree(dir: 'libs', include:'DynamicLights-1.8.8.jar')
-    //annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    //compileOnly("org.spongepowered:spongeapi:7.4.0")
-    /*("org.spongepowered:mixin:0.8.5") {
-        exclude module: "asm-commons"
-        exclude module: "asm-tree"
-        exclude module: "launchwrapper"
-        exclude module: "guava"
-        exclude module: "log4j-core"
-        exclude module: "gson"
-        exclude module: "commons-io"
-    }*/
-    /*compileOnly fg.deobf("curse.maven:dynamiclights-227874:2563244")
-    compileOnly fg.deobf("curse.maven:sel-341845:3024600")
-    compileOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
-    runtimeOnly fg.deobf("curse.maven:mixinbooter-419286:3687785")
-    runtimeOnly "re:witchery:0.5.2.4"
-    runtimeOnly "tt:tp:1.0.1.1"*/
+    compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
     include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    //compile "zone.rong:mixinbooter:8.3"
+
+    //compile "curse.maven:dynamiclights-227874:2271600"
+    // DL 1.8.8 from CurseForge is a zip, have to download and unzip to get the jar manually
+    dynamicLights "curse.maven:dynamiclights-227874:2271600"
+    compile fileTree(dir: 'libs', include:'DynamicLights-1.8.8.jar')
+}
+
+task extractDynamicLights(type: Copy) {
+    def zipFile = configurations.dynamicLights.singleFile
+    def zipFileTree = zipTree(zipFile).matching { include "**/DynamicLights-1.8.8.jar" }
+    from zipFileTree.files
+    into "$project.projectDir/libs"
+}
+
+compileJava {
+    dependsOn extractDynamicLights
 }
 
 apply plugin: "idea"
