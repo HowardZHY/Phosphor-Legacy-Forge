@@ -1,136 +1,108 @@
 buildscript {
     repositories {
-        jcenter()
-
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
-        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        mavenCentral()
+        maven { url 'https://maven.cleanroommc.com' }
     }
-
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:6.0.+'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 
+plugins {
+    id "java"
+    id "idea"
+    id "eclipse"
+    id "com.github.johnrengelman.shadow" version "2.0.4"
+}
+
 apply plugin: 'net.minecraftforge.gradle'
+// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
 
-group = "me.jellysquid.mods"
-
-if (System.getenv("BUILD_NUMBER") != null) {
-    version = "${minecraft_version}-${mod_version}+build${System.getenv("BUILD_NUMBER")}"
-} else {
-    version = "${minecraft_version}-${mod_version}-SNAPSHOT"
+eclipse {
+    classpath {
+        downloadJavadoc = false
+        downloadSources = false
+    }
 }
 
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = false
+    }
 }
+
+version = mod_version
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
     mappings channel: 'stable', version: '39-1.12'
+    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
-
-            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-            jvmArg "-Dmixin.hotSwap=true"
-            jvmArg "-Dmixin.checks.interfaces=true"
-
             workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
+            arg '-torg.spongepowered.asm.launch.MixinTweaker'
         }
 
         server {
-
-            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-            jvmArg "-Dmixin.hotSwap=true"
-            jvmArg "-Dmixin.checks.interfaces=true"
-
-            // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
+            arg '-torg.spongepowered.asm.launch.MixinTweaker'
         }
     }
 }
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/maven' }
+    maven { url 'https://maven.cleanroommc.com' }
     maven {
         url "https://www.cursemaven.com"
     }
-    maven {
-        url 'https://maven.cleanroommc.com'
-    }
-    flatDir {
-        dirs "libs"
-    }
-    mavenLocal()
 }
 
 configurations {
+    include
+    implementation.extendsFrom(include)
+    configurations.runtimeOnly.canBeResolved = true
     shade
     compile.extendsFrom shade
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2860"
-    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    compileOnly("org.spongepowered:spongeapi:7.4.0")
-    compileOnly("org.spongepowered:mixin:0.8.5") {
-        exclude module: "asm-commons"
-        exclude module: "asm-tree"
-        exclude module: "launchwrapper"
-        exclude module: "guava"
-        exclude module: "log4j-core"
-        exclude module: "gson"
-        exclude module: "commons-io"
-    }
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // Common:
+    annotationProcessor 'org.ow2.asm:asm-debug-all:5.2'
+    annotationProcessor 'com.google.guava:guava:32.1.2-jre'
+    annotationProcessor 'com.google.code.gson:gson:2.8.9'
+
+    // ForgeGradle:
+    compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+
     compileOnly fg.deobf("curse.maven:dynamiclights-227874:2563244")
-    compileOnly fg.deobf("curse.maven:sel-341845:3024600")
-    compileOnly 'zone.rong:mixinbooter:8.4'
-    runtimeOnly 'zone.rong:mixinbooter:8.4'
-    //runtimeOnly "re:witchery:0.5.2.4"
-    //runtimeOnly "tt:tp:1.0.1.1"
 }
-
-def coreModManifest = {
-    attributes "FMLAT": "phosphor_at.cfg"
-    attributes "Maven-Artifact": "${group}:${name}:${version}"
-    attributes "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-    attributes "FMLCorePluginContainsFMLMod": true
-    attributes "ForceLoadAsMod": true
-}
-
-jar {
-    //classifier = 'universal'
-
-    manifest coreModManifest
-
-    from sourceSets.main.output
-
-    rename '(.+_at.cfg)', 'META-INF/$1'
-}
-
-
 
 processResources {
-    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
-    inputs.property "version", project.version
-    inputs.property "mcversion", "1.12.2"
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', minecraft_version
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
 
-        expand 'version': project.version, 'mcversion': "1.12.2"
+        expand 'mod_id': mod_id, 'mod_name': mod_name, 'version': project.version,
+                'mcversion': minecraft_version
     }
 
     from(sourceSets.main.resources.srcDirs) {
@@ -140,7 +112,38 @@ processResources {
 
 mixin {
     add sourceSets.main, "mixins.phosphor.refmap.json"
-    disableAnnotationProcessorCheck()
 }
 
+jar {
+    exclude 'LICENSE.txt', 'META-INF/MANIFSET.MF', 'META-INF/maven/**', 'META-INF/*.RSA', 'META-INF/*.SF'
 
+    manifest.attributes(
+            "FMLAT": "phosphor_at.cfg",
+            "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin",
+            "FMLCorePluginContainsFMLMod": true,
+            "ForceLoadAsMod": true,
+            "tweakClass": "org.spongepowered.asm.launch.MixinTweaker",
+            "TweakOrder": 0
+    )
+    from sourceSets.main.output
+}
+
+shadowJar {
+    archiveName = jar.archiveName
+    configurations = [project.configurations.include]
+    compileJava.options.encoding = "UTF-8"
+    exclude "native-binaries/*"
+    exclude "META-INF/versions/**"
+
+    dependencies {
+        include(dependency("org.spongepowered:mixin:0.7.11-SNAPSHOT"))
+    }
+}
+
+reobf {
+    shadowJar {}
+}
+
+//jar.dependsOn("shadowJar")
+
+jar.finalizedBy("shadowJar")

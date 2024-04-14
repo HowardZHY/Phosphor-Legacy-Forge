@@ -4,6 +4,7 @@ import me.jellysquid.mods.phosphor.mod.PhosphorConfig;
 import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -68,14 +69,14 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
         if (this.spongePresent) {
             // Disable all Vanilla patches if we are in a Sponge environment
             if (mixinClassName.endsWith("$Vanilla")) {
-                logger.debug("Disabled mixin '{}' because we are in a SpongeForge environment", mixinClassName);
+                logger.debug("Disabled mixin " + mixinClassName + " because we are in a SpongeForge environment");
 
                 return false;
             }
         } else {
             // Disable all Sponge patches if we are not in a Sponge environment
             if (mixinClassName.endsWith("$Sponge")) {
-                logger.debug("Disabled patch '{}' because we are in a standard Vanilla/Forge environment", mixinClassName);
+                logger.debug("Disabled patch " + mixinClassName + " because we are in a standard Vanilla/Forge environment");
 
                 return false;
             }
@@ -83,7 +84,7 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
 
         // Do not apply client transformations if we are not in a client environment!
         if (targetClassName.startsWith("net.minecraft.client") && MixinEnvironment.getCurrentEnvironment().getSide() != MixinEnvironment.Side.CLIENT) {
-            logger.debug("Disabled patch '{}' because it targets an client-side class unavailable in the current environment", mixinClassName);
+            logger.debug("Disabled mixin " + mixinClassName + " because it targets an client-side class unavailable in the current environment");
 
             return false;
         }
@@ -102,12 +103,12 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
     }
 
     @Override
-    public void preApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
 
     @Override
-    public void postApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
 }

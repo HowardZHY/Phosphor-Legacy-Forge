@@ -294,7 +294,7 @@ public class LightingHooks {
                     neighborLightChecks[i] = ((NBTTagShort) list.get(i)).getShort();
                 }
             } else {
-                PhosphorMod.LOGGER.warn("Chunk field {} had invalid length, ignoring it (chunk coordinates: {} {})", neighborLightChecksKey, chunk.x, chunk.z);
+                PhosphorMod.LOGGER.warn("Chunk field neighborLightChecksKey had invalid length, ignoring it, chunk coordinates: " + neighborLightChecksKey + chunk.x + chunk.z);
             }
         }
     }
