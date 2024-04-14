@@ -1,40 +1,38 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
+import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.world.WorldChunkSlice;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.*;
+import net.minecraft.util.math.*;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@SuppressWarnings("UnnecessaryQualifiedMemberReference")
-@Mixin(value = Chunk.class)
+@SuppressWarnings("all")
+@Mixin(Chunk.class)
 public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, ILightingEngineProvider {
-    private static final EnumFacing[] HORIZONTAL = EnumFacing.Plane.HORIZONTAL.facings();
+
+    // === SHADOW START ===
 
     @Shadow
     @Final
     private ExtendedBlockStorage[] storageArrays;
 
     @Shadow
-    private boolean dirty;
+    private boolean isModified;
 
     @Shadow
     @Final
@@ -45,11 +43,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
 
     @Shadow
     @Final
-    private int[] precipitationHeightMap;
-
-    @Shadow
-    @Final
-    private World world;
+    private World worldObj;
 
     @Shadow
     private boolean isTerrainPopulated;
@@ -60,14 +54,20 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
 
     @Final
     @Shadow
-    public int x;
+    public int xPosition;
 
     @Final
     @Shadow
-    public int z;
+    public int zPosition;
 
     @Shadow
     private boolean isGapLightingUpdated;
+
+    @Shadow
+    private int queuedLightChecks;
+
+    @Shadow
+    private boolean isChunkLoaded;
 
     @Shadow
     public abstract TileEntity getTileEntity(BlockPos pos, Chunk.EnumCreateEntityType type);
@@ -76,19 +76,29 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
     public abstract IBlockState getBlockState(BlockPos pos);
 
     @Shadow
-    protected abstract int getBlockLightOpacity(int x, int y, int z);
+    public abstract int getHeightValue(int i, int j);
 
     @Shadow
     public abstract boolean canSeeSky(BlockPos pos);
+
+    // === SHADOW END ===
+
+    // === FIELD START ===
+
+    private static final EnumFacing[] HORIZONTAL = EnumFacing.Plane.HORIZONTAL.facings();
+
+    // === FIELD END ===
+
+    // === MIXINS START ===
 
     /**
      * Callback injected into the Chunk ctor to cache a reference to the lighting engine from the world.
      *
      * @author Angeline
      */
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(method = "<init>(Lnet/minecraft/world/World;II)V", at = @At("RETURN"))
     private void onConstructed(CallbackInfo ci) {
-        this.lightingEngine = ((ILightingEngineProvider) this.world).getLightingEngine();
+        this.lightingEngine = ((ILightingEngineProvider) this.worldObj).getLightingEngine();
     }
 
     /**
@@ -98,7 +108,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
      */
     @Inject(method = "getLightSubtracted", at = @At("HEAD"))
     private void onGetLightSubtracted(BlockPos pos, int amount, CallbackInfoReturnable<Integer> cir) {
-        this.lightingEngine.processLightUpdates();
+        this.getLightingEngine().processLightUpdates();
     }
 
     /**
@@ -106,16 +116,15 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
      *
      * @author Angeline
      */
-    @Inject(method = "onLoad", at = @At("RETURN"))
+    @Inject(method = "onChunkLoad", at = @At("RETURN"))
     private void onLoad(CallbackInfo ci) {
-        LightingHooks.scheduleRelightChecksForChunkBoundaries(this.world, (Chunk) (Object) this);
+        LightingHooks.scheduleRelightChecksForChunkBoundaries(this.worldObj, (Chunk) (Object) this);
     }
 
-    // === REPLACEMENTS ===
+    // === REPLACEMENTS START ===
 
     /**
-     * Replaces the call in setLightFor(Chunk, EnumSkyBlock, BlockPos) with our hook.
-     *
+     * @reason Replaces the call in setLightFor(Chunk, EnumSkyBlock, BlockPos) with our hook.
      * @author Angeline
      */
     @Redirect(
@@ -127,7 +136,17 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
             expect = 0
     )
     private void setLightForRedirectGenerateSkylightMap(Chunk chunk, EnumSkyBlock type, BlockPos pos, int value) {
-        LightingHooks.initSkylightForSection(this.world, (Chunk) (Object) this, this.storageArrays[pos.getY() >> 4]);
+        LightingHooks.initSkylightForSection(this.worldObj, (Chunk) (Object) this, this.storageArrays[pos.getY() >> 4]);
+    }
+
+    /**
+     * @reason Forge: Can sometimes be called before we are added to the global world list. So use the less accurate one during that. It'll be recalculated later.
+     * @author MinecraftForge
+     */
+    @Overwrite
+    public int getBlockLightOpacity(int x, int y, int z) {
+        IBlockState state = this.getBlockState(new BlockPos (x, y, z));
+        return !this.isChunkLoaded ? state.getLightOpacity() : state.getLightOpacity(this.worldObj, new BlockPos(this.xPosition << 4 | x & 15, y, this.zPosition << 4 | z & 15));
     }
 
     /**
@@ -135,7 +154,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
      * @author Angeline
      */
     @Overwrite
-    private void relightBlock(int x, int y, int z) {
+    public void relightBlock(int x, int y, int z) {
         int i = this.heightMap[z << 4 | x] & 255;
         int j = i;
 
@@ -150,8 +169,8 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
         if (j != i) {
             this.heightMap[z << 4 | x] = j;
 
-            if (this.world.provider.hasSkyLight()) {
-                LightingHooks.relightSkylightColumn(this.world, (Chunk) (Object) this, x, z, i, j);
+            if (!this.worldObj.provider.getHasNoSky()) {
+                LightingHooks.relightSkylightColumn(this.worldObj, (Chunk) (Object) this, x, z, i, j);
             }
 
             int l1 = this.heightMap[z << 4 | x];
@@ -165,45 +184,42 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
     /**
      * @reason Hook for calculating light updates only as needed. {@link MixinChunk#getCachedLightFor(EnumSkyBlock, BlockPos)} does not
      * call this hook.
-     *
      * @author Angeline
      */
     @Overwrite
     public int getLightFor(EnumSkyBlock type, BlockPos pos) {
-        this.lightingEngine.processLightUpdatesForType(type);
+        this.getLightingEngine().processLightUpdatesForType(type);
 
         return this.getCachedLightFor(type, pos);
     }
 
     /**
      * @reason Hooks into checkLight() to check chunk lighting and returns immediately after, voiding the rest of the function.
-     *
      * @author Angeline
      */
     @Overwrite
     public void checkLight() {
         this.isTerrainPopulated = true;
 
-        LightingHooks.checkChunkLighting((Chunk) (Object) this, this.world);
+        LightingHooks.checkChunkLighting((Chunk) (Object) this, this.worldObj);
     }
 
     /**
      * @reason Optimized version of recheckGaps. Avoids chunk fetches as much as possible.
-     *
      * @author Angeline
      */
     @Overwrite
-    private void recheckGaps(boolean onlyOne) {
-        this.world.profiler.startSection("recheckGaps");
+    public void recheckGaps(boolean onlyOne) {
+        this.worldObj.theProfiler.startSection("recheckGaps");
 
-        WorldChunkSlice slice = new WorldChunkSlice(this.world, this.x, this.z);
+        WorldChunkSlice slice = new WorldChunkSlice(this.worldObj, this.xPosition, this.zPosition);
 
-        if (this.world.isAreaLoaded(new BlockPos(this.x * 16 + 8, 0, this.z * 16 + 8), 16)) {
+        if (this.worldObj.isAreaLoaded(new BlockPos(this.xPosition * 16 + 8, 0, this.zPosition * 16 + 8), 16)) {
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     if (this.recheckGapsForColumn(slice, x, z)) {
                         if (onlyOne) {
-                            this.world.profiler.endSection();
+                            this.worldObj.theProfiler.endSection();
 
                             return;
                         }
@@ -214,8 +230,66 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
             this.isGapLightingUpdated = false;
         }
 
-        this.world.profiler.endSection();
+        this.worldObj.theProfiler.endSection();
     }
+
+    /**
+     * @author embeddedt
+     * @reason optimize random light checks so they complete faster
+     */
+    @Overwrite
+    public void enqueueRelightChecks() {
+
+        if (this.queuedLightChecks >= 4096)
+        {
+            return;
+        }
+
+        // boolean isActiveChunk = worldObj.activeChunkSet.contains(new ChunkCoordIntPair(this.xPosition, this.zPosition));
+        int lightRecheckSpeed;
+
+        /*if (worldObj.isRemote && isActiveChunk) {
+            lightRecheckSpeed = 256;
+        } else*/
+        if (worldObj.isRemote) {
+            lightRecheckSpeed = 64;
+        } else {
+            lightRecheckSpeed = 32;
+        }
+
+        BlockPos blockpos = new BlockPos(this.xPosition << 4, 0, this.zPosition << 4);
+        for (int i = 0; i < lightRecheckSpeed; ++i) {
+
+            int j = this.queuedLightChecks % 16;
+            int k = this.queuedLightChecks / 16 % 16;
+            int l = this.queuedLightChecks / 256;
+            ++this.queuedLightChecks;
+
+            for (int y = 0; y < 16; ++y)
+            {
+                ExtendedBlockStorage storage = this.storageArrays[j];
+                BlockPos blockpos1 = blockpos.add(k, (j << 4) + y, l);
+                boolean flag = y == 0 || y == 15 || k == 0 || k == 15 || l == 0 || l == 15;
+
+                if (storage == null && flag || storage != null && storage.get(k, y, l).getMaterial() == Material.AIR)
+                {
+                    for (EnumFacing enumfacing : EnumFacing.values())
+                    {
+                        BlockPos blockpos2 = blockpos1.offset(enumfacing);
+
+                        if (this.worldObj.getBlockState(blockpos2).getLightValue(worldObj, blockpos2) > 0)
+                        {
+                            this.worldObj.checkLight(blockpos2);
+                        }
+                    }
+
+                    this.worldObj.checkLight(blockpos1);
+                }
+            }
+        }
+    }
+
+    // === REPLACEMENTS END ===
 
     private boolean recheckGapsForColumn(WorldChunkSlice slice, int x, int z) {
         int i = x + z * 16;
@@ -225,8 +299,8 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
 
             int height = this.getHeightValue(x, z);
 
-            int x1 = this.x * 16 + x;
-            int z1 = this.z * 16 + z;
+            int x1 = this.xPosition * 16 + x;
+            int z1 = this.zPosition * 16 + z;
 
             int max = this.recheckGapsGetLowestHeight(slice, x1, z1);
 
@@ -242,11 +316,11 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
         int max = Integer.MAX_VALUE;
 
         for (EnumFacing facing : HORIZONTAL) {
-            int j = x + facing.getXOffset();
-            int k = z + facing.getZOffset();
+            int j = x + facing.getFrontOffsetX();
+            int k = z + facing.getFrontOffsetZ();
             Chunk chunk = slice.getChunkFromWorldCoords(j, k);
-            if(chunk != null) {
-                max = Math.min(max, slice.getChunkFromWorldCoords(j, k).getLowestHeight());
+            if (chunk != null) {
+                max = Math.min(max, chunk.getLowestHeight());
             }
 
         }
@@ -258,42 +332,48 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
         this.checkSkylightNeighborHeight(slice, x, z, max);
 
         for (EnumFacing facing : HORIZONTAL) {
-            int j = x + facing.getXOffset();
-            int k = z + facing.getZOffset();
+            int j = x + facing.getFrontOffsetX();
+            int k = z + facing.getFrontOffsetZ();
 
             this.checkSkylightNeighborHeight(slice, j, k, height);
         }
     }
 
     private void checkSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int maxValue) {
-        if(slice.getChunkFromWorldCoords(x, z) == null) {
+        if (!slice.isLoaded(x, z, 16)) {
             return;
         }
-        int i = slice.getChunkFromWorldCoords(x, z).getHeightValue(x & 15, z & 15);
+
+        Chunk chunk = slice.getChunkFromWorldCoords(x, z);
+        if (chunk == null) {
+            PhosphorMod.LOGGER.warn("Chunk is null! x: " + x + " z: " + z + " maxValue: " + maxValue);
+            return;
+        }
+
+        int i = chunk.getHeightValue(x & 15, z & 15);
 
         if (i > maxValue) {
             this.updateSkylightNeighborHeight(slice, x, z, maxValue, i + 1);
-        } else if (i < maxValue) {
+        }
+        else if (i < maxValue) {
             this.updateSkylightNeighborHeight(slice, x, z, i, maxValue + 1);
         }
     }
 
     private void updateSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int startY, int endY) {
         if (endY > startY) {
+
             if (!slice.isLoaded(x, z, 16)) {
                 return;
             }
 
             for (int i = startY; i < endY; ++i) {
-                this.world.checkLightFor(EnumSkyBlock.SKY, new BlockPos(x, i, z));
+                this.worldObj.checkLightFor(EnumSkyBlock.SKY, new BlockPos(x, i, z));
             }
 
-            this.dirty = true;
+            this.isModified = true;
         }
     }
-
-    @Shadow
-    public abstract int getHeightValue(int i, int j);
 
     // === INTERFACE IMPL ===
 
@@ -315,6 +395,12 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
 
     @Override
     public ILightingEngine getLightingEngine() {
+        if (this.lightingEngine == null) {
+            this.lightingEngine = ((ILightingEngineProvider)this.worldObj).getLightingEngine();
+            if (this.lightingEngine == null) {
+                throw new IllegalStateException("Cannot get Lighting Engine from instance");
+            }
+        }
         return this.lightingEngine;
     }
 
@@ -329,7 +415,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
     }
 
     @Shadow
-    protected abstract void setSkylightUpdated();
+    private void setSkylightUpdated() {}
 
     @Override
     public void setSkylightUpdatedPublic() {
@@ -342,29 +428,60 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
         int j = pos.getY();
         int k = pos.getZ() & 15;
 
-        ExtendedBlockStorage extendedblockstorage = this.storageArrays[j >> 4];
+        ExtendedBlockStorage storage = this.storageArrays[j >> 4];
 
-        if (extendedblockstorage == Chunk.NULL_BLOCK_STORAGE) {
+        if (storage == null) {
             if (this.canSeeSky(pos)) {
                 return type.defaultLightValue;
-            } else {
+            }
+            else {
                 return 0;
             }
-        } else if (type == EnumSkyBlock.SKY) {
-            if (!this.world.provider.hasSkyLight()) {
+        }
+        else if (type == EnumSkyBlock.SKY) {
+            if (this.worldObj.provider.getHasNoSky()) {
                 return 0;
-            } else {
-                return extendedblockstorage.getSkyLight(i, j & 15, k);
             }
-        } else {
+            else {
+                return storage.getExtSkylightValue(i, j & 15, k);
+            }
+        }
+        else {
             if (type == EnumSkyBlock.BLOCK) {
-                return extendedblockstorage.getBlockLight(i, j & 15, k);
-            } else {
+                return storage.getExtBlocklightValue(i, j & 15, k);
+            }
+            else {
                 return type.defaultLightValue;
             }
         }
     }
 
-
     // === END OF INTERFACE IMPL ===
+
+    private ExtendedBlockStorage initSection(int y, boolean storeSkylight) {
+
+        ExtendedBlockStorage storage = new ExtendedBlockStorage(y, storeSkylight);
+
+        LightingHooks.initSkylightForSection(this.worldObj, (Chunk) (Object) this, storage);
+
+        return storage;
+    }
+
+    /**
+     * Redirects the construction of the ExtendedBlockStorage in setBlockState(BlockPos, IBlockState). We need to initialize
+     * the skylight data for the constructed section as soon as possible.
+     *
+     * @author Angeline
+     */
+    @Redirect(
+            method = "setBlockState",
+            at = @At(
+                    value = "NEW",
+                    args = "class=net/minecraft/world/chunk/storage/ExtendedBlockStorage"
+            ),
+            expect = 0
+    )
+    private ExtendedBlockStorage setBlockStateCreateSectionVanilla(int y, boolean storeSkylight) {
+        return this.initSection(y, storeSkylight);
+    }
 }

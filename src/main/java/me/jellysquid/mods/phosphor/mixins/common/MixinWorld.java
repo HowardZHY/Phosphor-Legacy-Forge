@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingEngine;
@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -13,7 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(World.class)
 public abstract class MixinWorld implements ILightingEngineProvider {
+    @Shadow
+    public abstract boolean isAreaLoaded(BlockPos pos, int i, boolean b);
+
     private LightingEngine lightingEngine;
+
+    @Override
+    public LightingEngine getLightingEngine() {
+        return this.lightingEngine;
+    }
 
     /**
      * @author Angeline
@@ -30,13 +39,15 @@ public abstract class MixinWorld implements ILightingEngineProvider {
      */
     @Inject(method = "checkLightFor", at = @At("HEAD"), cancellable = true)
     private void checkLightFor(EnumSkyBlock type, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        this.lightingEngine.scheduleLightUpdate(type, pos);
+
+        if (!this.isAreaLoaded(pos, 16, false))
+        {
+            cir.setReturnValue(false);
+        }
+        
+        this.getLightingEngine().scheduleLightUpdate(type, pos);
 
         cir.setReturnValue(true);
     }
 
-    @Override
-    public LightingEngine getLightingEngine() {
-        return this.lightingEngine;
-    }
 }

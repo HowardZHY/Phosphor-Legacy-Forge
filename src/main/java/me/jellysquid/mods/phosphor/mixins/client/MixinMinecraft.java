@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.client;
+package me.jellysquid.mods.phosphor.mixins.client;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import net.minecraft.client.Minecraft;
@@ -15,10 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinMinecraft {
     @Shadow
     @Final
-    public Profiler profiler;
+    public Profiler mcProfiler;
 
     @Shadow
-    public WorldClient world;
+    public WorldClient theWorld;
 
     /**
      * @author Angeline
@@ -27,9 +27,9 @@ public abstract class MixinMinecraft {
      */
     @Inject(method = "runTick", at = @At(value = "CONSTANT", args = "stringValue=levelRenderer", shift = At.Shift.BY, by = -3))
     private void onRunTick(CallbackInfo ci) {
-        this.profiler.endStartSection("lighting");
+        this.mcProfiler.endStartSection("lighting");
 
-        ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
+        ((ILightingEngineProvider) this.theWorld).getLightingEngine().processLightUpdates();
     }
 
 }

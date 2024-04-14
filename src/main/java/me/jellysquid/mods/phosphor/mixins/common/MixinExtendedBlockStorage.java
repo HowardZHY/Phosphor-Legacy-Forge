@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -8,47 +8,25 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ExtendedBlockStorage.class)
 public class MixinExtendedBlockStorage {
-    @Shadow
-    private NibbleArray skyLight;
 
     @Shadow
     private int blockRefCount;
 
     @Shadow
-    private NibbleArray blockLight;
+    private NibbleArray blocklightArray;
+
+    @Shadow
+    private NibbleArray skylightArray;
 
     private int lightRefCount = -1;
 
     /**
      * @author Angeline
-     * @author Reset lightRefCount on call
-     * @reason r
+     * @reason Reset lightRefCount on call
      */
     @Overwrite
-    public void setSkyLight(int x, int y, int z, int value) {
-        this.skyLight.set(x, y, z, value);
-        this.lightRefCount = -1;
-    }
-
-    /**
-     * @author Angeline
-     * @author Reset lightRefCount on call
-     * @reason r
-     */
-    @Overwrite
-    public void setBlockLight(int x, int y, int z, int value) {
-        this.blockLight.set(x, y, z, value);
-        this.lightRefCount = -1;
-    }
-
-    /**
-     * @author Angeline
-     * @author Reset lightRefCount on call
-     * @reason r
-     */
-    @Overwrite
-    public void setBlockLight(NibbleArray array) {
-        this.blockLight = array;
+    public void setExtSkylightValue(int x, int y, int z, int value) {
+        this.skylightArray.set(x, y, z, value);
         this.lightRefCount = -1;
     }
 
@@ -57,8 +35,28 @@ public class MixinExtendedBlockStorage {
      * @reason Reset lightRefCount on call
      */
     @Overwrite
-    public void setSkyLight(NibbleArray array) {
-        this.skyLight = array;
+    public void setExtBlocklightValue(int x, int y, int z, int value) {
+        this.blocklightArray.set(x, y, z, value);
+        this.lightRefCount = -1;
+    }
+
+    /**
+     * @author Angeline
+     * @reason Reset lightRefCount on call
+     */
+    @Overwrite
+    public void setBlocklightArray(NibbleArray array) {
+        this.blocklightArray = array;
+        this.lightRefCount = -1;
+    }
+
+    /**
+     * @author Angeline
+     * @reason Reset lightRefCount on call
+     */
+    @Overwrite
+    public void setSkylightArray(NibbleArray array) {
+        this.blocklightArray = array;
         this.lightRefCount = -1;
     }
 
@@ -75,8 +73,7 @@ public class MixinExtendedBlockStorage {
 
         // -1 indicates the lightRefCount needs to be re-calculated
         if (this.lightRefCount == -1) {
-            if (this.checkLightArrayEqual(this.skyLight, (byte) 0xFF)
-                    && this.checkLightArrayEqual(this.blockLight, (byte) 0x00)) {
+            if (this.checkLightArrayEqual(this.skylightArray, (byte) 0xFF) && this.checkLightArrayEqual(this.blocklightArray, (byte) 0x00)) {
                 this.lightRefCount = 0; // Lighting is trivial, don't send to clients
             } else {
                 this.lightRefCount = 1; // Lighting is not trivial, send to clients

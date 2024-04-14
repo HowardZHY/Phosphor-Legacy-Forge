@@ -1,27 +1,27 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
 
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
+        maven { url = 'https://maven.cleanroommc.com' }
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:6.0.+'
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT"
+        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle'
+plugins {
+    id "java"
+    id "com.github.johnrengelman.shadow" version "2.0.4"
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 
 group = "me.jellysquid.mods"
-
-if (System.getenv("BUILD_NUMBER") != null) {
-    version = "${minecraft_version}-${mod_version}+build${System.getenv("BUILD_NUMBER")}"
-} else {
-    version = "${minecraft_version}-${mod_version}-SNAPSHOT"
-}
 
 compileJava {
     sourceCompatibility = 1.8
@@ -29,118 +29,138 @@ compileJava {
 }
 
 minecraft {
-    mappings channel: 'stable', version: '39-1.12'
+    version = "1.9.4-12.17.0.2317-1.9.4"
+    mappings = "stable_26"
+    runDir = "run"
+    makeObfSourceJar = false
+}
 
-    runs {
-        client {
+runClient {
+    jvmArgs "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
+    jvmArgs "-Dmixin.hotSwap=true"
+    jvmArgs "-Dmixin.checks.interfaces=true"
+/*
+// Recommended logging data for a userdev environment
+    property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
-            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-            jvmArg "-Dmixin.hotSwap=true"
-            jvmArg "-Dmixin.checks.interfaces=true"
-
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-
-        server {
-
-            jvmArg "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
-            jvmArg "-Dmixin.hotSwap=true"
-            jvmArg "-Dmixin.checks.interfaces=true"
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-    }
+// Recommended logging level for the console
+    property 'forge.logging.console.level', 'debug'*/
 }
 
 repositories {
-    maven { url = 'https://repo.spongepowered.org/maven' }
+    mavenCentral()
+    maven { url 'https://maven.minecraftforge.net' }
+    maven { url 'https://jitpack.io/' }
+    maven { url 'https://repo.spongepowered.org/maven' }
     maven {
         url "https://www.cursemaven.com"
     }
     maven {
         url 'https://maven.cleanroommc.com'
     }
-    flatDir {
+    /*flatDir {
         dirs "libs"
-    }
+    }*/
     mavenLocal()
 }
 
 configurations {
+    dynamicLights
+    include
+    implementation.extendsFrom(include)
+    configurations.runtimeOnly.canBeResolved = true
     shade
     compile.extendsFrom shade
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2860"
-    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    compileOnly("org.spongepowered:spongeapi:7.4.0")
-    compileOnly("org.spongepowered:mixin:0.8.5") {
-        exclude module: "asm-commons"
-        exclude module: "asm-tree"
-        exclude module: "launchwrapper"
-        exclude module: "guava"
-        exclude module: "log4j-core"
-        exclude module: "gson"
-        exclude module: "commons-io"
+    compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    //compile "zone.rong:mixinbooter:8.3"
+
+    //compile "curse.maven:dynamiclights-227874:2302008"
+    // DL 1.9.4 from CurseForge is a zip, have to download and unzip to get the jar manually
+    dynamicLights "curse.maven:dynamiclights-227874:2302008"
+    compile fileTree(dir: 'libs', include:'DynamicLights-1.9.4.jar')
+}
+
+task extractDynamicLights(type: Copy) {
+    def zipFile = configurations.dynamicLights.singleFile
+    def zipFileTree = zipTree(zipFile).matching { include "**/DynamicLights-1.9.4.jar" }
+    from zipFileTree.files
+    into "$project.projectDir/libs"
+}
+
+compileJava {
+    dependsOn extractDynamicLights
+}
+
+apply plugin: "idea"
+
+idea {
+    module {
+        downloadJavadoc = false
+        downloadSources = false
+        inheritOutputDirs = true
     }
-    compileOnly fg.deobf("curse.maven:dynamiclights-227874:2563244")
-    compileOnly fg.deobf("curse.maven:sel-341845:3024600")
-    compileOnly 'zone.rong:mixinbooter:8.4'
-    runtimeOnly 'zone.rong:mixinbooter:8.4'
-    //runtimeOnly "re:witchery:0.5.2.4"
-    //runtimeOnly "tt:tp:1.0.1.1"
 }
 
 def coreModManifest = {
     attributes "FMLAT": "phosphor_at.cfg"
-    attributes "Maven-Artifact": "${group}:${name}:${version}"
     attributes "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin"
     attributes "FMLCorePluginContainsFMLMod": true
     attributes "ForceLoadAsMod": true
+    attributes "tweakClass": "org.spongepowered.asm.launch.MixinTweaker"
+    attributes "TweakOrder": 0
 }
 
 jar {
-    //classifier = 'universal'
+    classifier = 'universal'
 
     manifest coreModManifest
 
     from sourceSets.main.output
 
     rename '(.+_at.cfg)', 'META-INF/$1'
-}
 
-
-
-processResources {
-    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
-    inputs.property "version", project.version
-    inputs.property "mcversion", "1.12.2"
-
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        expand 'version': project.version, 'mcversion': "1.12.2"
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+    enabled = false
 }
 
 mixin {
+    disableRefMapWarning = true
+    defaultObfuscationEnv searge
     add sourceSets.main, "mixins.phosphor.refmap.json"
-    disableAnnotationProcessorCheck()
+    //disableAnnotationProcessorCheck()
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
 
+    manifest coreModManifest
+
+    from sourceSets.main.allSource
+}
+
+processResources {
+
+}
+
+shadowJar {
+    archiveName = jar.archiveName
+    configurations = [project.configurations.include]
+    compileJava.options.encoding = "UTF-8"
+    exclude "native-binaries/*"
+    exclude "META-INF/versions/**"
+
+    dependencies {
+        include(dependency("org.spongepowered:mixin:0.7.11-SNAPSHOT"))
+    }
+}
+
+reobf {
+    shadowJar {}
+}
+
+jar.dependsOn("shadowJar")
+
+build.dependsOn shadowJar

@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import net.minecraft.world.WorldServer;
@@ -14,13 +14,13 @@ import java.util.Set;
 
 @Mixin(ChunkProviderServer.class)
 public abstract class MixinChunkProviderServer {
-    @Shadow
     @Final
-    public WorldServer world;
+    @Shadow
+    public WorldServer worldObj;
 
-    @Shadow
     @Final
-    private Set<Long> droppedChunks;
+    @Shadow
+    private Set<Long> droppedChunksSet;
 
     /**
      * Injects a callback into the start of saveChunks(boolean) to force all light updates to be processed before saving.
@@ -28,8 +28,8 @@ public abstract class MixinChunkProviderServer {
      * @author Angeline
      */
     @Inject(method = "saveChunks", at = @At("HEAD"))
-    private void onSaveChunks(boolean all, CallbackInfoReturnable<Boolean> cir) {
-        ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
+    private void onSaveChunks(boolean p_saveChunks_1_, CallbackInfoReturnable<Boolean> cir) {
+        ((ILightingEngineProvider) this.worldObj).getLightingEngine().processLightUpdates();
     }
 
     /**
@@ -38,11 +38,11 @@ public abstract class MixinChunkProviderServer {
      *
      * @author Angeline
      */
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "unloadQueuedChunks", at = @At("HEAD"))
     private void onTick(CallbackInfoReturnable<Boolean> cir) {
-        if (!this.world.disableLevelSaving) {
-            if (!this.droppedChunks.isEmpty()) {
-                ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
+        if (!this.worldObj.disableLevelSaving) {
+            if (!this.droppedChunksSet.isEmpty()) {
+                ((ILightingEngineProvider) this.worldObj).getLightingEngine().processLightUpdates();
             }
         }
     }

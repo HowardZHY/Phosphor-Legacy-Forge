@@ -2,8 +2,11 @@ package me.jellysquid.mods.phosphor.mixins.plugins;
 
 import me.jellysquid.mods.phosphor.mod.PhosphorConfig;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -18,7 +21,7 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
 
     private PhosphorConfig config;
 
-    private boolean spongePresent;
+    public boolean spongePresent;
 
     @Override
     public void onLoad(String mixinPackage) {
@@ -32,6 +35,11 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
 
         ENABLE_ILLEGAL_THREAD_ACCESS_WARNINGS = this.config.enableIllegalThreadAccessWarnings;
 
+        String mcVersion = Loader.instance().getMCVersionString();
+
+        logger.info("Detected MC Version : " + mcVersion);
+
+
         try {
             // This class will always be loaded by Forge prior to us (due to the tweak class ordering) and should have
             // no effect. On the off chance it isn't, early class loading shouldn't cause any issues as nobody seems to
@@ -44,9 +52,9 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
         }
 
         if (this.spongePresent) {
-            logger.info("Sponge has been detected on the classpath! Enabling Sponge specific patches...");
-            logger.warn("We cannot currently detect if you are using Sponge's async lighting patch. If you have not " +
-                    "already done so, please disable it in your configuration file for SpongeForge or you will run into issues.");
+            logger.error("Sponge (Forge) has been detected on the classpath, you will run into issues. ");
+            logger.error("Due to SpongeForge Legacy 's codebase was outdated and uses an extremely outdated Mixin (0.5.11), This mod can't be compatible with it! ");
+            FMLCommonHandler.instance().exitJava(-1, false);
         }
     }
 
@@ -63,22 +71,6 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (!this.config.enablePhosphor) {
             return false;
-        }
-
-        if (this.spongePresent) {
-            // Disable all Vanilla patches if we are in a Sponge environment
-            if (mixinClassName.endsWith("$Vanilla")) {
-                logger.debug("Disabled mixin '{}' because we are in a SpongeForge environment", mixinClassName);
-
-                return false;
-            }
-        } else {
-            // Disable all Sponge patches if we are not in a Sponge environment
-            if (mixinClassName.endsWith("$Sponge")) {
-                logger.debug("Disabled patch '{}' because we are in a standard Vanilla/Forge environment", mixinClassName);
-
-                return false;
-            }
         }
 
         // Do not apply client transformations if we are not in a client environment!
@@ -102,12 +94,12 @@ public class LightingEnginePlugin implements IMixinConfigPlugin {
     }
 
     @Override
-    public void preApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
 
     @Override
-    public void postApply(String targetClassName, org.objectweb.asm.tree.ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
 }

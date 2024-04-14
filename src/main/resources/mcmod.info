@@ -1,15 +1,14 @@
 [
   {
     "modid": "phosphor-lighting",
-    "name": "Hesperus, fork from Phosphor",
-    "description": "",
-    "version": "${version}",
-    "mcversion": "${mcversion}",
+    "name": "Phosphor Lighting Engine",
+    "description": "Unofficial fork and port of Phosphor. Lighting engine performance optimizations and bug fixes for Minecraft. ",
+    "version": "0.2.9.2",
+    "mcversion": "1.8.9",
     "logoFile": "/assets/phosphor-lighting/icon.png",
-    "url": "https://minecraft.curseforge.com/projects/hesperus",
+    "url": "https://github.com/HowardZHY/Phosphor-Legacy-Forge",
     "authorList": [
-      "Angeline (@jellysquid)",
-      "embeddedt"
+      "Angeline (@jellysquid)"
     ]
   }
 ]

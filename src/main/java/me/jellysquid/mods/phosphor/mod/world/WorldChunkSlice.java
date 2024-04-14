@@ -1,5 +1,6 @@
 package me.jellysquid.mods.phosphor.mod.world;
 
+import me.jellysquid.mods.phosphor.mod.world.lighting.LightingEngineHelpers;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -17,7 +18,7 @@ public class WorldChunkSlice {
 
         for (int xDiff = -radius; xDiff <= radius; xDiff++) {
             for (int zDiff = -radius; zDiff <= radius; zDiff++) {
-                this.chunks[((xDiff + radius) * DIAMETER) + (zDiff + radius)] = world.getChunkProvider().getLoadedChunk(x + xDiff, z + zDiff);
+                this.chunks[((xDiff + radius) * DIAMETER) + (zDiff + radius)] = LightingEngineHelpers.getLoadedChunk(world, x + xDiff, z + zDiff);
             }
         }
 
