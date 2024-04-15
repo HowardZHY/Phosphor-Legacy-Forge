@@ -114,8 +114,6 @@ mixin {
 }
 
 jar {
-    exclude 'LICENSE.txt', 'META-INF/MANIFSET.MF', 'META-INF/maven/**', 'META-INF/*.RSA', 'META-INF/*.SF'
-
     manifest.attributes(
             "FMLAT": "phosphor_at.cfg",
             "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLPlugin",
@@ -136,6 +134,7 @@ shadowJar {
 
     dependencies {
         include(dependency("org.spongepowered:mixin:0.7.11-SNAPSHOT"))
+        exclude 'LICENSE.txt', 'META-INF/MANIFSET.MF', 'META-INF/maven/**', 'META-INF/*.RSA', 'META-INF/*.SF'
     }
 }
 
