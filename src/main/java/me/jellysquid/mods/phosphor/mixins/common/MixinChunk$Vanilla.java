@@ -1,7 +1,6 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
@@ -11,7 +10,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = Chunk.class)
 public abstract class MixinChunk$Vanilla {

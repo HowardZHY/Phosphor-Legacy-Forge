@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.client;
+package me.jellysquid.mods.phosphor.mixins.client;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import net.minecraft.client.Minecraft;

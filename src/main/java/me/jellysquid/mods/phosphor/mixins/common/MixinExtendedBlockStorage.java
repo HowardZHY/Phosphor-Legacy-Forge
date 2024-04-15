@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
