@@ -82,12 +82,11 @@ configurations {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Common:
     annotationProcessor 'org.ow2.asm:asm-debug-all:5.2'
     annotationProcessor 'com.google.guava:guava:32.1.2-jre'
     annotationProcessor 'com.google.code.gson:gson:2.8.9'
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
-    // ForgeGradle:
     compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
     include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 
@@ -145,5 +144,5 @@ reobf {
 }
 
 //jar.dependsOn("shadowJar")
-
 jar.finalizedBy("shadowJar")
+build.dependsOn shadowJar
