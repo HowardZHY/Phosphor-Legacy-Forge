@@ -14,7 +14,7 @@
     "common.MixinChunk$Vanilla",
     "common.MixinChunkProviderServer",
     "common.MixinExtendedBlockStorage",
-    "common.MixinSPacketChunkData$Modern",
+    "common.MixinSPacketChunkData",
     "common.MixinWorld"
   ],
   "injectors": {
