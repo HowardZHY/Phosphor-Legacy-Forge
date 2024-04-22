@@ -422,7 +422,6 @@ public class LightingEngine implements ILightingEngine {
         }
     }
 
-
     private static int getCachedLightFor(Chunk chunk, ExtendedBlockStorage storage, BlockPos pos, EnumSkyBlock type) {
         int i = pos.getX() & 15;
         int j = pos.getY();

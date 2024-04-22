@@ -342,18 +342,16 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
 
     private void checkSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int maxValue) {
         Chunk chunk = slice.getChunkFromWorldCoords(x, z);
-        if (chunk == null) {
+        if (chunk != null) {
+            int i = chunk.getHeightValue(x & 15, z & 15);
+
+            if (i > maxValue) {
+                this.updateSkylightNeighborHeight(slice, x, z, maxValue, i + 1);
+            } else if (i < maxValue) {
+                this.updateSkylightNeighborHeight(slice, x, z, i, maxValue + 1);
+            }
+        } else {
             PhosphorMod.LOGGER.warn("Chunk is null! x: " + x + " z: " + z + " maxValue: " + maxValue);
-            return;
-        }
-
-        int i = chunk.getHeightValue(x & 15, z & 15);
-
-        if (i > maxValue) {
-            this.updateSkylightNeighborHeight(slice, x, z, maxValue, i + 1);
-        }
-        else if (i < maxValue) {
-            this.updateSkylightNeighborHeight(slice, x, z, i, maxValue + 1);
         }
     }
 

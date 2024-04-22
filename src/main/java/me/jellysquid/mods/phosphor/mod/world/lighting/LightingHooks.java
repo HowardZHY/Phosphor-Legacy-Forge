@@ -295,7 +295,8 @@ public class LightingHooks {
         final int xBase = chunk.xPosition << 4;
         final int zBase = chunk.zPosition << 4;
 
-        final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(xBase, 0, zBase);
+        //final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(xBase, 0, zBase);
+        final BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(xBase, 0, zBase);
 
         if (world.isAreaLoaded(pos.add(-16, 0, -16), pos.add(31, 255, 31), false)) {
             final ExtendedBlockStorage[] extendedBlockStorage = chunk.getBlockStorageArray();
@@ -334,7 +335,8 @@ public class LightingHooks {
 
             ((IChunkLightingData) chunk).setLightInitialized(true);
         }
-        //TODO?
+
+        pos.release(); // TODO?
     }
 
     public static void checkChunkLighting(final Chunk chunk, final World world) {

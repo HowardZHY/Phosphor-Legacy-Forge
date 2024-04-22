@@ -3,6 +3,7 @@
   "minVersion": "0.7",
   "package": "me.jellysquid.mods.phosphor.mixins",
   "plugin": "me.jellysquid.mods.phosphor.mixins.plugins.LightingEnginePlugin",
+  "refmap": "mixins.phosphor.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "client": [
     "client.MixinMinecraft"

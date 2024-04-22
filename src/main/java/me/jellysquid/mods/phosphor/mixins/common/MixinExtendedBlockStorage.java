@@ -56,7 +56,7 @@ public class MixinExtendedBlockStorage {
      */
     @Overwrite
     public void setSkylightArray(NibbleArray array) {
-        this.blocklightArray = array;
+        this.skylightArray = array;
         this.lightRefCount = -1;
     }
 
