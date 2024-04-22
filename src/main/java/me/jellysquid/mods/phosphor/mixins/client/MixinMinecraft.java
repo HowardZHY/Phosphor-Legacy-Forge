@@ -18,7 +18,7 @@ public abstract class MixinMinecraft {
     public Profiler mcProfiler;
 
     @Shadow
-    public WorldClient theWorld;
+    public WorldClient world;
 
     /**
      * @author Angeline
@@ -29,7 +29,7 @@ public abstract class MixinMinecraft {
     private void onRunTick(CallbackInfo ci) {
         this.mcProfiler.endStartSection("lighting");
 
-        ((ILightingEngineProvider) this.theWorld).getLightingEngine().processLightUpdates();
+        ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
     }
 
 }

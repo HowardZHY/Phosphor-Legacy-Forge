@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SPacketChunkData.class)
-public class MixinSPacketChunkData$Legacy {//TODO
+public class MixinSPacketChunkData$Legacy {
     /**
      * @author Angeline
      * Injects a callback into S21PacketChunkData#calculateChunkSize(Chunk, booolean, int) to force light updates to be

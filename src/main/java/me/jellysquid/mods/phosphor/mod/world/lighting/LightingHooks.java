@@ -286,7 +286,7 @@ public class LightingHooks {
                     neighborLightChecks[i] = ((NBTTagShort) list.get(i)).getShort();
                 }
             } else {
-                PhosphorMod.LOGGER.warn("Chunk field {} had invalid length, ignoring it (chunk coordinates: {} {})", neighborLightChecksKey, chunk.xPosition, chunk.zPosition);
+                PhosphorMod.LOGGER.warn("Chunk field neighborLightChecksKey had invalid length, ignoring it, chunk coordinates: " + neighborLightChecksKey + chunk.xPosition + chunk.zPosition);
             }
         }
     }
@@ -328,12 +328,13 @@ public class LightingHooks {
                 }
             }
 
-            if (!world.provider.getHasNoSky()) {
+            if (!world.provider.hasNoSky()) {
                 ((IChunkLightingData) chunk).setSkylightUpdatedPublic();
             }
 
             ((IChunkLightingData) chunk).setLightInitialized(true);
         }
+        //TODO?
     }
 
     public static void checkChunkLighting(final Chunk chunk, final World world) {
@@ -357,7 +358,7 @@ public class LightingHooks {
     }
 
     public static void initSkylightForSection(final World world, final Chunk chunk, final ExtendedBlockStorage section) {
-        if (!world.provider.getHasNoSky()) {
+        if (!world.provider.hasNoSky()) {
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     if (chunk.getHeightValue(x, z) <= section.getYLocation()) {

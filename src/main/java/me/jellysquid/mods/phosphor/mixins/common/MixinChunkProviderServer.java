@@ -16,7 +16,7 @@ import java.util.Set;
 public abstract class MixinChunkProviderServer {
     @Final
     @Shadow
-    public WorldServer worldObj;
+    public WorldServer world;
 
     @Final
     @Shadow
@@ -29,7 +29,7 @@ public abstract class MixinChunkProviderServer {
      */
     @Inject(method = "saveChunks", at = @At("HEAD"))
     private void onSaveChunks(boolean p_saveChunks_1_, CallbackInfoReturnable<Boolean> cir) {
-        ((ILightingEngineProvider) this.worldObj).getLightingEngine().processLightUpdates();
+        ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
     }
 
     /**
@@ -38,11 +38,11 @@ public abstract class MixinChunkProviderServer {
      *
      * @author Angeline
      */
-    @Inject(method = "unloadQueuedChunks", at = @At("HEAD"))
+    @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfoReturnable<Boolean> cir) {
-        if (!this.worldObj.disableLevelSaving) {
+        if (!this.world.disableLevelSaving) {
             if (!this.droppedChunksSet.isEmpty()) {
-                ((ILightingEngineProvider) this.worldObj).getLightingEngine().processLightUpdates();
+                ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
             }
         }
     }

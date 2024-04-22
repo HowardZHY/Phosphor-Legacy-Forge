@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT"
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
@@ -29,8 +29,8 @@ compileJava {
 }
 
 minecraft {
-    version = "1.9.4-12.17.0.2317-1.9.4"
-    mappings = "stable_26"
+    version = "1.10.2-12.18.3.2511"
+    mappings = "stable_29"
     runDir = "run"
     makeObfSourceJar = false
 }
@@ -78,15 +78,14 @@ dependencies {
     include "org.spongepowered:mixin:0.7.11-SNAPSHOT"
     //compile "zone.rong:mixinbooter:8.3"
 
-    //compile "curse.maven:dynamiclights-227874:2302008"
-    // DL 1.9.4 from CurseForge is a zip, have to download and unzip to get the jar manually
-    dynamicLights "curse.maven:dynamiclights-227874:2302008"
-    compile fileTree(dir: 'libs', include:'DynamicLights-1.9.4.jar')
+    // DL 1.10.2 from CurseForge is a zip, have to download and unzip to get the jar manually
+    dynamicLights "curse.maven:dynamiclights-227874:2312751"
+    compile fileTree(dir: 'libs', include:'DynamicLights-1.10.2.jar')
 }
 
 task extractDynamicLights(type: Copy) {
     def zipFile = configurations.dynamicLights.singleFile
-    def zipFileTree = zipTree(zipFile).matching { include "**/DynamicLights-1.9.4.jar" }
+    def zipFileTree = zipTree(zipFile).matching { include "**/DynamicLights-1.10.2jar" }
     from zipFileTree.files
     into "$project.projectDir/libs"
 }

@@ -1,22 +1,58 @@
 package me.jellysquid.mods.phosphor.mixins.common;
 
+import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(value = Chunk.class)
-public class MixinChunk$Vanilla {
+public abstract class MixinChunk$Vanilla {
+
+    @Shadow
+    @Final
+    private World world;
+
+    /**
+     * Redirects the construction of the ExtendedBlockStorage in setBlockState(BlockPos, IBlockState). We need to initialize
+     * the skylight data for the constructed section as soon as possible.
+     *
+     * @author Angeline
+     */
+    @Redirect(
+            method = "setBlockState",
+            at = @At(
+                    value = "NEW",
+                    args = "class=net/minecraft/world/chunk/storage/ExtendedBlockStorage"
+            ),
+            expect = 0
+    )
+    private ExtendedBlockStorage setBlockStateCreateSectionVanilla(int y, boolean storeSkylight) {
+        return this.initSection(y, storeSkylight);
+    }
+
+    private ExtendedBlockStorage initSection(int y, boolean storeSkylight) {
+
+        ExtendedBlockStorage storage = new ExtendedBlockStorage(y, storeSkylight);
+
+        LightingHooks.initSkylightForSection(this.world, (Chunk) (Object) this, storage);
+
+        return storage;
+    }
 
     /**
      * Modifies the flag variable of setBlockState(BlockPos, IBlockState) to always be false after it is set.
      *
      * @author Angeline
      */
-    /*@ModifyVariable(
+    @ModifyVariable(
             method = "setBlockState",
             at = @At(
                     value = "STORE",
@@ -28,7 +64,7 @@ public class MixinChunk$Vanilla {
     )
     private boolean setBlockStateInjectGenerateSkylightMapVanilla(boolean generateSkylight) {
         return false;
-    }*/
+    }
 
     /**
      * Prevent propagateSkylightOcclusion from being called.
