@@ -2,6 +2,7 @@ package me.jellysquid.mods.phosphor.mod.world.lighting;
 
 import me.jellysquid.mods.phosphor.mixins.client.ClientChunkProviderAccessor;
 import me.jellysquid.mods.phosphor.mixins.common.ServerChunkProviderAccessor;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.init.Blocks;
@@ -40,12 +41,18 @@ public class LightingEngineHelpers {
     }
 
     static int getLightValueForState(final IBlockState state, final IBlockAccess world, final BlockPos pos) {
+        Block block = state.getBlock();
         if (LightingEngine.isDynamicLightsLoaded) {
             /* Use the Dynamic Lights implementation */
-            return atomicstryker.dynamiclights.client.DynamicLights.getLightValue(state.getBlock(), world, pos);
+            return atomicstryker.dynamiclights.client.DynamicLights.getLightValue(block, world, pos);
         } else {
-            /* Use the vanilla implementation */
-            return state.getBlock().getLightValue(world, pos);
+            Block block1 = world.getBlockState(pos).getBlock();
+            if (block1 != block) {
+                return block1.getLightValue(world, pos);
+            } else {
+                /* Use the vanilla implementation */
+                return block.getLightValue(world, pos);
+            }
         }
     }
 
